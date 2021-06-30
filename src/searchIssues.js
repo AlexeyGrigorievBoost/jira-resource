@@ -62,6 +62,23 @@ function searchBySummary(baseFileDir, source, params, custom_filter_str) {
   return [jql, maxResults]
 }
 
+function searchByKeyOrSummary(baseFileDir, source, params, custom_filter_str) {
+  const summary = replaceTextFileString(baseFileDir, params.summary);
+  const issue_key = replaceTextFileString(baseFileDir, params.issue_key);
+
+  debug('Searching for issue by key: %s or summary: %s', issue_key, summary);
+
+  let jql = util.format(
+    'project="%s" AND (key="%s" OR summary~"%s") %s ORDER BY id DESC',
+    source.project,
+    issue_key,
+    summary,
+    custom_filter_str
+  )
+  let maxResults = 1;
+  return [jql, maxResults]
+}
+
 module.exports = (baseFileDir, source, params, callback) => {
   const searchUrl = source.url + '/rest/api/2/search/';
 
@@ -69,7 +86,9 @@ module.exports = (baseFileDir, source, params, callback) => {
 
   let jql = null;
   let maxResults = 0;
-  if (params.issue_key) {
+  if (params.issue_key && params.summary) {
+    [jql, maxResults] = searchByKeyOrSummary(baseFileDir, source, params, custom_filter_str);
+  } else if (params.issue_key) {
     [jql, maxResults] = searchByIssueKey(baseFileDir, source, params, custom_filter_str);
   } else {
     [jql, maxResults] = searchBySummary(baseFileDir, source, params, custom_filter_str);
