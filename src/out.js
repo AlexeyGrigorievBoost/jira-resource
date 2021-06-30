@@ -26,7 +26,7 @@ module.exports = (input, baseFileDir, callback) => {
         searchIssues(baseFileDir, source, params, next);
       },
       (issues, next) => {
-        if (issues.length == 0) {
+        if (!issues || issues.length == 0) {
           createIssue(baseFileDir, source, params, next)
         } else {
           async.each(issues, function(issue, callback) {
